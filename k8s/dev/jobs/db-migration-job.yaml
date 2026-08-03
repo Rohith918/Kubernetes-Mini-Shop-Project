@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration-job
+  namespace: minishop-dev
+spec:
+  # Automatically clean up the finished Job pod after 300 seconds (5 mins)
+  ttlSecondsAfterFinished: 300
+  
+  # How many times to retry before marking the Job as failed
+  backoffLimit: 3
+
+  template:
+    metadata:
+      name: db-migration
+    spec:
+      restartPolicy: OnFailure # Required for Jobs (cannot be Always)
+      containers:
+        - name: db-migrator
+          image: postgres:16-alpine
+          
+          # Environment variables to connect to Postgres
+          env:
+            - name: PGHOST
+              value: "postgres-service"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: PGDATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: POSTGRES_DB
+
+          # Execute SQL commands directly via psql CLI
+          command: ["psql"]
+          args:
+            - "-c"
+            - |
+              CREATE TABLE IF NOT EXISTS schema_migrations (
+                id SERIAL PRIMARY KEY,
+                version VARCHAR(50) NOT NULL,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              INSERT INTO schema_migrations (version) VALUES ('001_create_products');
+              ALTER TABLE products ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: minishop-dev
+spec:
+  accessModes:
+    - ReadWriteOnce # Disk can be mounted as read-write by a SINGLE node at a time
+  resources:
+    requests:
+      storage: 1Gi   # Request 1 Gigabyte of persistent storage
+  # storageClassName: standard # Optional: specify storage driver, or omit to use cluster default

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: minishop-dev
+data:
+  PORT: "3000"
+  DB_HOST: "postgres-service"   # Headless Service DNS name
+  DB_NAME: "minishop"
+  REDIS_URL: "redis://redis-service:6379"  # ClusterIP Service DNS name

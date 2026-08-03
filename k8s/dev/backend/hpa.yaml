@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: minishop-dev
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend # Target deployment to scale
+  minReplicas: 2  # Never drop below 2 pods (High Availability)
+  maxReplicas: 5  # Cap scaling at 5 pods to prevent runaway resource consumption
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50 # Scale up if average CPU across pods exceeds 50% of request

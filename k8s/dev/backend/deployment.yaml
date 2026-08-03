@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: minishop-dev
+  labels:
+    app: backend
+spec:
+  replicas: 2 # Start with 2 replicas for high availability
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: backend-sa # Binds the RBAC ServiceAccount created in Step 7
+      containers:
+        - name: backend
+          image: backend:latest # Or your built local image tag
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+
+          # Environment variables from Secret & ConfigMap
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+
+          # CPU & Memory guarantees (Crucial for HPA)
+          resources:
+            requests:
+              cpu: "100m"      # 0.1 CPU core
+              memory: "128Mi"
+            limits:
+              cpu: "500m"      # 0.5 CPU core cap
+              memory: "256Mi"
+
+          # Probe 1: Controls Service traffic routing
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          # Probe 2: Controls Container restarts
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10

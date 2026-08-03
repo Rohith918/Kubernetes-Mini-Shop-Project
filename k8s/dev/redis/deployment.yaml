@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: minishop-dev
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          # Basic resource bounds (best practice for cluster stability)
+          resources:
+            requests:
+              cpu: "50m"       # 0.05 CPU core
+              memory: "64Mi"   # 64 Megabytes RAM
+            limits:
+              cpu: "100m"      # 0.1 CPU core limit
+              memory: "128Mi"  # 128 Megabytes RAM limit

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minishop-ingress
+  namespace: minishop-dev
+  annotations:
+    # Rewrite target regex: passes capture group 2 to the backend service
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx # Links to the installed NGINX ingress class
+  rules:
+    - host: minishop.local # Local domain entry
+      http:
+        paths:
+          # Route 1: Forward /api/* requests directly to backend-service
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 3000
+
+          # Route 2: Forward all other web traffic (/) to frontend-service
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
