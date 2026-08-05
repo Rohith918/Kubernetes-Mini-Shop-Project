@@ -13,8 +13,7 @@
 ## Request flow
 
 ```
-Browser -> Ingress -> frontend Service -> frontend Pod (static files)
-Browser (JS) -> Ingress -> backend Service -> backend Pod -> Postgres / Redis
+
 ```
 
 ## Notes for K8s mapping (fill in as you build)
